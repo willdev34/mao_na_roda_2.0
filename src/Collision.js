@@ -26,7 +26,7 @@ export class Collision {
   }
 
   // Testa a pegada do cadeirante (4 cantos). Retorna { wall, boxes }
-  probe(U, V, r = 12) {
+  probe(U, V, r = 7) {
     const out = { wall: false, boxes: new Set() }
     for (const [dU, dV] of [[-r, -r], [r, -r], [-r, r], [r, r]]) {
       const [i, j] = this.cell(U + dU, V + dV)

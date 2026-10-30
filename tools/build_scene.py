@@ -52,7 +52,7 @@ for path in FORCE_FREE:
             ci_, cj_ = cell_of(*uv(x1+(x2-x1)*t, y1+(y2-y1)*t))
             blocked[max(ci_-1, 0):ci_+2, max(cj_-1, 0):cj_+2] = False
 ring = np.zeros_like(blocked); ring[0, :] = ring[-1, :] = ring[:, 0] = ring[:, -1] = True
-ring[-2, :] = ring[:, -2] = True         # margem junto ao vidro
+# (margem extra junto ao vidro removida: corredores mais largos)
 blocked |= ring
 
 npc_cells = np.zeros_like(blocked)
