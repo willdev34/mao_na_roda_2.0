@@ -61,6 +61,34 @@ for fx, fy in NPC_FEET:
     npc_cells[max(ci-1, 0):ci+2, max(cj-1, 0):cj+2] = True
 blocked |= npc_cells
 
+blocked_occ = blocked.copy()        # oclusao continua usando todas as celulas bloqueadas
+
+# Regra de profundidade: o movel da frente esconde o cadeirante que passa por tras.
+# Uma celula coberta pelo corpo de um movel so bloqueia perto da base dele (HALF);
+# mais atras, o chao fica livre (o cadeirante e desenhado atras do movel).
+HALF = 26.0
+floor_s = ndi.binary_opening(floor, structure=np.ones((2, 2)))
+freed = np.zeros_like(blocked)
+for i in range(1, NU-1):
+    for j in range(1, NV-1):
+        if not blocked[i, j] or npc_cells[i, j] or ring[i, j]: continue
+        uc, vc = U0+(i+.5)*C, V0+(j+.5)*C
+        if uc > 728-6*C or vc > 1801-6*C: continue            # faixa de vidro fica como estava
+        x, y = xy(uc, vc); x, y = int(round(x)), int(round(y))
+        if not (0 <= x < W-1 and 0 <= y < H-1) or floor_s[y, x]: continue
+        yc = y
+        while yc < min(y+400, H-3) and not (floor_s[yc, x] and floor_s[yc+1, x] and floor_s[yc+2, x]): yc += 1
+        if yc < min(y+400, H-3) and (yc - y) > HALF: freed[i, j] = True
+blocked_new = blocked & ~freed
+# so vale o que for alcancavel a partir do inicio sem atravessar parede (nao vaza para fora da sala)
+si0, sj0 = cell_of(*uv(*START_PX))
+fr0 = ~blocked_new; fr0[si0, sj0] = True
+lab0, _ = ndi.label(fr0)                                      # conectividade em 4 vizinhos
+ok0 = lab0 == lab0[si0, sj0]
+freed &= ok0
+blocked = blocked & ~freed
+print('celulas liberadas por tras de moveis:', int(freed.sum()))
+
 # caixas chutaveis: celulas da metade de baixo da silhueta
 dyn = json.load(open(f'{out}/dynamic.json'))
 box_cells = {}
@@ -103,7 +131,7 @@ uu, vv = yy - S*xx, yy + S*xx
 ci = np.floor((uu-U0)/C).astype(int); cj = np.floor((vv-V0)/C).astype(int)
 inside = (ci >= 0) & (ci < NU) & (cj >= 0) & (cj < NV)
 solid = np.zeros((NU, NV), bool)                # celulas que geram oclusao
-solid |= blocked & ~npc_cells
+solid |= blocked_occ & ~npc_cells
 for cs in box_cells.values():
     for c in cs: solid[c] = False
 solid[0, :] = False; solid[:, 0] = False        # paredes do fundo ficam sempre atras
