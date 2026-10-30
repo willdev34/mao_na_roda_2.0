@@ -37,7 +37,7 @@ export class Agent {
         for (let x = d.x; x <= d.x + d.w; x += 8) for (let y = d.y + d.h * 0.45; y <= d.y + d.h; y += 8) mark(...this.worldToUV(x, y), 6)
       } else if (d.cls === 'pessoa') {
         const [U, V] = this.worldToUV(d.x + d.w / 2, d.y + d.h - 4)
-        for (let a = -1; a <= 1; a++) for (let b = -1; b <= 1; b++) mark(U + a * col.d.C, V + b * col.d.C, Infinity)
+        for (let a = -3; a <= 3; a++) for (let b = -3; b <= 3; b++) mark(U + a * col.d.C, V + b * col.d.C, Infinity)
       }
     }
     return extra

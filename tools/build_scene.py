@@ -7,9 +7,10 @@ from PIL import Image
 from scipy import ndimage as ndi
 
 src, out, maskf = sys.argv[1], sys.argv[2], sys.argv[3]
-S = np.tan(np.radians(30)); C = 26.55
-U0, V0, NU, NV = -360.0, 792.0, 41, 38
-THR = 0.4
+S = np.tan(np.radians(30)); C = 13.275          # celula de 1/4 de ladrilho
+U0, V0, NU, NV = -360.0, 792.0, 82, 76
+GL = 6*26.55                                    # largura da faixa de vidro (em U,V)
+THR = 0.5
 START_PX = (598, 522)               # pes do cadeirante, em pixels do mapa original
 # pontos de interacao das missoes (pixels do mapa original, no chao)
 TARGETS = {
@@ -31,7 +32,7 @@ yellow = (r > 200) & (g > 190) & (b < 90)
 floor = (r-b >= 14) & (r-b <= 70) & (s > .07) & (s < .35) & (mx > 150) & (mx < 245) & (g > b) & (r > g)
 floor |= yellow                      # faixa amarela e chao andavel
 relax = ((mx > 165) & (r >= b+2) & (r >= g-4) & (s < .32) & (b > r-30)) | floor
-fr_s = ndi.uniform_filter(floor.astype(float), 13)
+fr_s = ndi.uniform_filter(floor.astype(float), 7)
 fr_r = ndi.uniform_filter(relax.astype(float), 13)
 
 def cell_of(u, v): return int((u-U0)//C), int((v-V0)//C)
@@ -41,7 +42,7 @@ for i in range(NU):
     for j in range(NV):
         uc, vc = U0+(i+.5)*C, V0+(j+.5)*C
         x, y = xy(uc, vc); x, y = int(round(x)), int(round(y))
-        glass = uc > 728-6*C or vc > 1801-6*C
+        glass = uc > 728-GL or vc > 1801-GL
         blocked[i, j] = (fr_r[y, x] < .75) if glass else (fr_s[y, x] < THR)
 # corredores que a classificacao por cor nao enxerga (passagens estreitas, vidro)
 FORCE_FREE = [[(1280, 700), (1290, 640), (1300, 590), (1292, 545)],
@@ -50,8 +51,8 @@ for path in FORCE_FREE:
     for (x1, y1), (x2, y2) in zip(path, path[1:]):
         for t in np.linspace(0, 1, 40):
             ci_, cj_ = cell_of(*uv(x1+(x2-x1)*t, y1+(y2-y1)*t))
-            blocked[max(ci_-1, 0):ci_+2, max(cj_-1, 0):cj_+2] = False
-ring = np.zeros_like(blocked); ring[0, :] = ring[-1, :] = ring[:, 0] = ring[:, -1] = True
+            blocked[max(ci_-2, 0):ci_+3, max(cj_-2, 0):cj_+3] = False
+ring = np.zeros_like(blocked); ring[:2, :] = ring[-2:, :] = ring[:, :2] = ring[:, -2:] = True
 # (margem extra junto ao vidro removida: corredores mais largos)
 blocked |= ring
 
@@ -63,22 +64,23 @@ blocked |= npc_cells
 
 blocked_occ = blocked.copy()        # oclusao continua usando todas as celulas bloqueadas
 
-# Regra de profundidade: o movel da frente esconde o cadeirante que passa por tras.
-# Uma celula coberta pelo corpo de um movel so bloqueia perto da base dele (HALF);
-# mais atras, o chao fica livre (o cadeirante e desenhado atras do movel).
-HALF = 26.0
-floor_s = ndi.binary_opening(floor, structure=np.ones((2, 2)))
+# Passar por tras de um movel alto: so vale se o cadeirante ficar (quase) todo escondido
+# atras dele, sem aparecer sobre o piso ou sobre moveis baixos.
+nf_s = ~ndi.binary_opening(floor, structure=np.ones((2, 2)))
+ii = np.zeros((H+1, W+1)); ii[1:, 1:] = nf_s.cumsum(0).cumsum(1)
+def frac_solid(x0, y0, x1, y1):
+    x0, y0 = max(x0, 0), max(y0, 0); x1, y1 = min(x1, W), min(y1, H)
+    if x1 <= x0 or y1 <= y0: return 0.0
+    return (ii[y1, x1]-ii[y0, x1]-ii[y1, x0]+ii[y0, x0]) / ((x1-x0)*(y1-y0))
+FREE_BEHIND = False   # o colisor segue so o chao visivel (area das rodas); nada de entrar atras/dentro dos moveis
 freed = np.zeros_like(blocked)
-for i in range(1, NU-1):
-    for j in range(1, NV-1):
+for i in range(2, NU-2):
+    for j in range(2, NV-2):
         if not blocked[i, j] or npc_cells[i, j] or ring[i, j]: continue
         uc, vc = U0+(i+.5)*C, V0+(j+.5)*C
-        if uc > 728-6*C or vc > 1801-6*C: continue            # faixa de vidro fica como estava
+        if uc > 728-GL or vc > 1801-GL: continue            # faixa de vidro fica como estava
         x, y = xy(uc, vc); x, y = int(round(x)), int(round(y))
-        if not (0 <= x < W-1 and 0 <= y < H-1) or floor_s[y, x]: continue
-        yc = y
-        while yc < min(y+400, H-3) and not (floor_s[yc, x] and floor_s[yc+1, x] and floor_s[yc+2, x]): yc += 1
-        if yc < min(y+400, H-3) and (yc - y) > HALF: freed[i, j] = True
+        if FREE_BEHIND and frac_solid(x-26, y-72, x+26, y) >= 0.97: freed[i, j] = True
 blocked_new = blocked & ~freed
 # so vale o que for alcancavel a partir do inicio sem atravessar parede (nao vaza para fora da sala)
 si0, sj0 = cell_of(*uv(*START_PX))
@@ -115,7 +117,7 @@ reach = lab == lab[si, sj]
 tinfo = {}
 for k, t in TARGETS.items():
     u, v = uv(*t['px']); ci, cj = cell_of(u, v)
-    ok_ = reach[max(ci-1, 0):ci+2, max(cj-1, 0):cj+2].any()
+    ok_ = reach[max(ci-2, 0):ci+3, max(cj-2, 0):cj+3].any()
     tinfo[k] = {'u': u, 'v': v, 'r': t['r'], 'px': t['px'], 'cls': t['cls'], 'obj': t['obj'], 'reachable': bool(ok_)}
     print(k, 'alcancavel' if ok_ else 'FORA DO ALCANCE')
 base_block = ~reach
@@ -134,7 +136,7 @@ solid = np.zeros((NU, NV), bool)                # celulas que geram oclusao
 solid |= blocked_occ & ~npc_cells
 for cs in box_cells.values():
     for c in cs: solid[c] = False
-solid[0, :] = False; solid[:, 0] = False        # paredes do fundo ficam sempre atras
+solid[:2, :] = False; solid[:, :2] = False        # paredes do fundo ficam sempre atras
 cell_front = np.zeros((NU, NV))                 # y do vertice de baixo da celula
 for i in range(NU):
     for j in range(NV):
