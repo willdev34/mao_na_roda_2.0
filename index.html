@@ -31,6 +31,20 @@
     #pad .right { grid-column: 3; grid-row: 2; border-radius: 4px 14px 14px 4px; }
     #pad .down { grid-column: 2; grid-row: 3; border-radius: 4px 4px 14px 14px; }
     #pad .mid { grid-column: 2; grid-row: 2; background: rgba(255,255,255,.72); border: 2px solid rgba(40,40,40,.55); border-radius: 4px; }
+    #menu { position: fixed; inset: 0; z-index: 100; background-color: #0a1220; display: grid; place-items: center; padding: 16px; background: linear-gradient(rgba(10,18,32,.78), rgba(10,18,32,.9)), url(/assets/office.png) center/cover no-repeat #0a1220; color: #fff; }
+    #menu.hide { display: none; }
+    #menu .box { width: min(440px, 100%); max-height: 100%; overflow: auto; text-align: center; }
+    #menu h1 { margin: 0; font-size: clamp(34px, 9vw, 54px); letter-spacing: 1px; line-height: 1.05; }
+    #menu h1 span { color: #ffc400; }
+    #menu .sub { margin: 8px 0 26px; opacity: .8; font-size: 15px; }
+    #menu button { display: block; width: 100%; margin: 10px 0; border: 0; border-radius: 14px; padding: 14px; font-size: 18px; font-weight: 700; color: #fff; background: rgba(255,255,255,.14); }
+    #menu button.main { background: #1f7ae0; font-size: 22px; padding: 16px; }
+    #menu .panel { display: none; text-align: left; background: rgba(255,255,255,.1); border-radius: 14px; padding: 16px 18px; margin-bottom: 8px; line-height: 1.5; font-size: 15px; }
+    #menu .panel.show { display: block; }
+    #menu .panel h3 { margin: 0 0 8px; font-size: 17px; color: #ffc400; }
+    #menu .panel ul { margin: 0; padding-left: 20px; }
+    #menu .panel li { margin: 4px 0; }
+    #menu .foot { margin-top: 18px; font-size: 12px; opacity: .6; }
     #modal { position: fixed; inset: 0; display: none; place-items: center; background: rgba(10,15,25,.6); z-index: 10; }
     #modal.show { display: grid; }
     #modal .card { width: min(420px, 88vw); background: #fff; border-radius: 18px; padding: 22px 22px 18px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.5); animation: pop .25s ease-out; }
@@ -69,6 +83,35 @@
       <h2 id="m-title"></h2>
       <p id="m-text"></p>
       <button id="m-ok" type="button">Continuar</button>
+    </div>
+  </div>
+  <div id="menu" class="ui">
+    <div class="box">
+      <h1>MÃO NA <span>RODA</span></h1>
+      <p class="sub">Um dia de trabalho sobre rodas</p>
+      <div id="p-tut" class="panel">
+        <h3>Como jogar</h3>
+        <ul>
+          <li>Complete 3 missões: pegar o café ☕, buscar na impressora 🖨️ e chegar à sua mesa 💼 (a mesa só conta por último).</li>
+          <li>PC: ◀ ▶ giram a cadeira, ▲ ▼ avançam e recuam. Tecla C troca para o modo direto, onde cada seta anda numa direção.</li>
+          <li>Celular: use o D-pad no canto esquerdo da tela.</li>
+          <li>Encoste numa caixa e o cadeirante chuta ela para longe.</li>
+          <li>Botão Modo IA: o computador joga sozinho. Toque em qualquer seta para assumir de volta.</li>
+        </ul>
+      </div>
+      <div id="p-cred" class="panel">
+        <h3>Créditos</h3>
+        <ul>
+          <li>Game design: Anderson Mansera</li>
+          <li>Ilustração e animação: Emerson Lopes</li>
+          <li>Programação: Will de Paula</li>
+        </ul>
+        <p style="margin:10px 0 0;font-size:13px;opacity:.75">Jogo original de 2014 (Construct 2). Esta versão é um remake em Phaser 3, com um agente de IA que joga sozinho.</p>
+      </div>
+      <button id="start" class="main" type="button">Iniciar</button>
+      <button id="b-tut" type="button">Como jogar</button>
+      <button id="b-cred" type="button">Créditos</button>
+      <div class="foot">Remake 2026</div>
     </div>
   </div>
   <script type="module" src="/src/main.js"></script>

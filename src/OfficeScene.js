@@ -85,7 +85,22 @@ export class OfficeScene extends Phaser.Scene {
     $('m-ok').addEventListener('click', () => this.closeModal())
     this.updateModeLabel()
     this.setupAI()
+    this.setupMenu()
     window.__scene = this        // atalho para depuração no console
+  }
+
+  // ---------- Tela inicial ----------
+  setupMenu() {
+    this.paused = true
+    const panels = { 'b-tut': 'p-tut', 'b-cred': 'p-cred' }
+    for (const [b, p] of Object.entries(panels)) {
+      $(b).addEventListener('click', () => {
+        const open = $(p).classList.contains('show')
+        Object.values(panels).forEach((id) => $(id).classList.remove('show'))
+        if (!open) $(p).classList.add('show')
+      })
+    }
+    $('start').addEventListener('click', () => { $('menu').classList.add('hide'); this.paused = false })
   }
 
   // ---------- Modo IA ----------
