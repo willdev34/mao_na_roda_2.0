@@ -31,10 +31,12 @@
     #pad .right { grid-column: 3; grid-row: 2; border-radius: 4px 14px 14px 4px; }
     #pad .down { grid-column: 2; grid-row: 3; border-radius: 4px 4px 14px 14px; }
     #pad .mid { grid-column: 2; grid-row: 2; background: rgba(255,255,255,.72); border: 2px solid rgba(40,40,40,.55); border-radius: 4px; }
-    #menu { position: fixed; inset: 0; z-index: 100; background: #4fd0ff url(/assets/menu.jpg) center/cover no-repeat; color: #111; font-family: 'Arial Black', Impact, system-ui, sans-serif; }
+    #menu { position: fixed; inset: 0; z-index: 100; background: #4fd0ff; color: #111; font-family: 'Arial Black', Impact, system-ui, sans-serif; overflow: hidden; }
+    #menu::before { content: ''; position: absolute; inset: -30px; background: url(/assets/menu.jpg) center/cover no-repeat; filter: blur(18px); }
     #menu.hide { display: none; }
+    #menu .stage { position: absolute; inset: 0; margin: auto; width: min(100vw, calc(100vh * 1098 / 654)); aspect-ratio: 1098 / 654; background: url(/assets/menu.jpg) center/100% 100% no-repeat; container-type: size; }
     #menu .opts { position: absolute; left: 66%; top: 44%; display: flex; flex-direction: column; align-items: flex-start; }
-    #menu .opts button { border: 0; background: none; padding: 2px 0; margin: 0; font: inherit; font-size: clamp(22px, 4.2vw, 40px); text-transform: uppercase; letter-spacing: 1px; color: #9aa3ab; text-shadow: 0 2px 0 rgba(255,255,255,.7); cursor: pointer; text-align: left; }
+    #menu .opts button { border: 0; background: none; padding: 0; margin: 0 0 .5cqw; font: inherit; font-size: 3.7cqw; line-height: 1.15; text-transform: uppercase; letter-spacing: .1cqw; color: #9aa3ab; text-shadow: 0 .2cqw 0 rgba(255,255,255,.7); cursor: pointer; text-align: left; }
     #menu .opts button:hover, #menu .opts button:focus-visible, #menu .opts button.main { color: #111; outline: none; }
     #menu .panel { display: none; position: absolute; inset: 0; margin: auto; width: min(460px, 90vw); height: fit-content; max-height: 86vh; overflow: auto; background: rgba(255,255,255,.95); border-radius: 16px; padding: 18px 20px; box-shadow: 0 20px 60px rgba(0,0,0,.45); font-family: system-ui, sans-serif; line-height: 1.5; font-size: 15px; }
     #menu .panel.show { display: block; }
@@ -43,10 +45,12 @@
     #menu .panel li { margin: 5px 0; }
     #menu .panel .close { display: block; margin: 14px auto 0; border: 0; background: #1f7ae0; color: #fff; font: 600 15px system-ui; padding: 9px 24px; border-radius: 10px; }
     @media (max-aspect-ratio: 1/1) {
-      #menu { background-size: 100% auto; background-position: top; background-color: #ffb21e; }
-      #menu .opts { left: 0; right: 0; top: calc(100vw * 0.6 + 36px); bottom: auto; align-items: center; }
-      #menu .opts button { color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
-      #menu .opts button { text-align: center; font-size: clamp(26px, 8vw, 40px); }
+      #menu { background: #ffb21e; }
+      #menu::before { display: none; }
+      #menu .stage { inset: 0 0 auto 0; container-type: normal; }
+      #menu .opts { left: 0; right: 0; top: calc(100% + 36px); align-items: center; }
+      #menu .opts button { font-size: clamp(26px, 8vw, 40px); margin-bottom: 8px; text-align: center; color: #fff; text-shadow: 0 2px 0 rgba(0,0,0,.35); }
+      #menu .opts button.main { color: #111; text-shadow: 0 2px 0 rgba(255,255,255,.5); }
     }
     #modal { position: fixed; inset: 0; display: none; place-items: center; background: rgba(10,15,25,.6); z-index: 10; }
     #modal.show { display: grid; }
@@ -89,11 +93,11 @@
     </div>
   </div>
   <div id="menu" class="ui">
-    <div class="opts">
+    <div class="stage"><div class="opts">
       <button id="start" class="main" type="button">Iniciar</button>
       <button id="b-tut" type="button">Tutorial</button>
       <button id="b-cred" type="button">Créditos</button>
-    </div>
+    </div></div>
     <div id="p-tut" class="panel">
       <h3>Tutorial</h3>
       <ul>
