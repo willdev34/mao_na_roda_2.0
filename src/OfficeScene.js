@@ -100,6 +100,7 @@ export class OfficeScene extends Phaser.Scene {
         if (!open) $(p).classList.add('show')
       })
     }
+    document.querySelectorAll('#menu .close').forEach((c) => c.addEventListener('click', () => Object.values(panels).forEach((id) => $(id).classList.remove('show'))))
     $('start').addEventListener('click', () => { $('menu').classList.add('hide'); this.paused = false })
   }
 
