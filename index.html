@@ -1,0 +1,76 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+  <title>Mão na Roda</title>
+  <style>
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+    html, body { margin: 0; height: 100%; background: #1b2430; overflow: hidden; font-family: system-ui, sans-serif; touch-action: none; overscroll-behavior: none; }
+    #game { position: fixed; inset: 0; }
+    .ui { user-select: none; -webkit-user-select: none; -webkit-touch-callout: none; }
+    #hud { position: fixed; top: calc(10px + env(safe-area-inset-top)); left: calc(10px + env(safe-area-inset-left)); color: #fff; pointer-events: none; }
+    #hud h1 { margin: 0 0 6px; font-size: 12px; letter-spacing: .1em; text-transform: uppercase; opacity: .85; }
+    #slots { display: flex; gap: 8px; }
+    .slot { width: 46px; height: 46px; border-radius: 10px; background: rgba(0,0,0,.45); border: 2px solid rgba(255,255,255,.35); display: grid; place-items: center; font-size: 24px; transition: transform .25s, background .25s; }
+    .slot.done { background: rgba(255, 196, 0, .85); border-color: #fff; transform: scale(1.08); }
+    #goals { margin: 8px 0 0; padding: 0; list-style: none; font-size: 13px; text-shadow: 0 1px 3px rgba(0,0,0,.8); }
+    #goals li.done { text-decoration: line-through; opacity: .6; }
+    #mode { position: fixed; top: calc(10px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); color: #fff; background: rgba(0,0,0,.5); padding: 8px 12px; border-radius: 10px; font-size: 13px; border: 0; }
+    #ai { position: fixed; top: calc(56px + env(safe-area-inset-top)); right: calc(10px + env(safe-area-inset-right)); color: #fff; background: #6a3de8; padding: 8px 14px; border-radius: 10px; font-size: 13px; font-weight: 600; border: 0; }
+    #ai.on { background: #22a559; }
+    #toast { position: fixed; left: 50%; top: 18%; transform: translateX(-50%); background: rgba(0,0,0,.75); color: #fff; padding: 10px 16px; border-radius: 12px; font-size: 14px; opacity: 0; transition: opacity .3s; pointer-events: none; text-align: center; max-width: 85vw; }
+    #toast.show { opacity: 1; }
+    /* D-pad no canto esquerdo */
+    #pad { position: fixed; left: calc(16px + env(safe-area-inset-left)); bottom: calc(18px + env(safe-area-inset-bottom)); width: 204px; height: 204px; display: grid; grid-template-columns: repeat(3, 68px); grid-template-rows: repeat(3, 68px); }
+    #pad::before { content: ""; position: absolute; inset: -8px; border-radius: 50%; border: 3px solid rgba(255,255,255,.35); pointer-events: none; }
+    #pad button { border: 2px solid rgba(40,40,40,.55); background: rgba(255,255,255,.72); font-size: 24px; color: #333; touch-action: none; padding: 0; }
+    #pad button.on { background: #fff; transform: scale(.94); }
+    #pad .up { grid-column: 2; grid-row: 1; border-radius: 14px 14px 4px 4px; }
+    #pad .left { grid-column: 1; grid-row: 2; border-radius: 14px 4px 4px 14px; }
+    #pad .right { grid-column: 3; grid-row: 2; border-radius: 4px 14px 14px 4px; }
+    #pad .down { grid-column: 2; grid-row: 3; border-radius: 4px 4px 14px 14px; }
+    #pad .mid { grid-column: 2; grid-row: 2; background: rgba(255,255,255,.72); border: 2px solid rgba(40,40,40,.55); border-radius: 4px; }
+    #modal { position: fixed; inset: 0; display: none; place-items: center; background: rgba(10,15,25,.6); z-index: 10; }
+    #modal.show { display: grid; }
+    #modal .card { width: min(420px, 88vw); background: #fff; border-radius: 18px; padding: 22px 22px 18px; text-align: center; box-shadow: 0 20px 60px rgba(0,0,0,.5); animation: pop .25s ease-out; }
+    #modal .emoji { font-size: 54px; }
+    #modal h2 { margin: 6px 0 8px; font-size: 22px; color: #1b2430; }
+    #modal p { margin: 0 0 16px; color: #3b4658; line-height: 1.45; font-size: 15px; }
+    #modal button { border: 0; background: #1f7ae0; color: #fff; font-size: 16px; padding: 11px 26px; border-radius: 12px; }
+    @keyframes pop { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
+    @media (max-height: 460px) { #pad { transform: scale(.75); transform-origin: left bottom; } }
+  </style>
+</head>
+<body>
+  <div id="game"></div>
+  <div id="hud" class="ui">
+    <h1>Conquistas</h1>
+    <div id="slots"><div class="slot" data-m="cafe">☕</div><div class="slot" data-m="impressora">🖨️</div><div class="slot" data-m="mesa">💼</div></div>
+    <ul id="goals">
+      <li data-m="cafe">Pegar o café</li>
+      <li data-m="impressora">Buscar na impressora</li>
+      <li data-m="mesa">Chegar à sua mesa</li>
+    </ul>
+  </div>
+  <button id="mode" class="ui" type="button"></button>
+  <button id="ai" class="ui" type="button">Modo IA</button>
+  <div id="toast" class="ui"></div>
+  <div id="pad" class="ui">
+    <button class="up" data-key="up" aria-label="Para cima">▲</button>
+    <button class="left" data-key="left" aria-label="Esquerda">◀</button>
+    <div class="mid"></div>
+    <button class="right" data-key="right" aria-label="Direita">▶</button>
+    <button class="down" data-key="down" aria-label="Para baixo">▼</button>
+  </div>
+  <div id="modal" class="ui">
+    <div class="card">
+      <div class="emoji" id="m-emoji"></div>
+      <h2 id="m-title"></h2>
+      <p id="m-text"></p>
+      <button id="m-ok" type="button">Continuar</button>
+    </div>
+  </div>
+  <script type="module" src="/src/main.js"></script>
+</body>
+</html>
