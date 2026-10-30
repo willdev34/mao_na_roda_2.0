@@ -2,7 +2,9 @@
 
 Remake do jogo de 2014 (Construct 2) que mostra as dificuldades de um cadeirante num escritório.
 
-Créditos do original: Game Design Anderson Mansera, Ilustração e animação Emerson Lopes, Programação Will de Paula.
+**Jogue online:** https://mao-na-roda-five.vercel.app
+
+Créditos do original: Game Design Anderson Mansera, Ilustração e animação Emerson Lopes, Programação William de Paula.
 
 ## Rodar (PowerShell)
 
@@ -37,12 +39,19 @@ Pegar o café, buscar na impressora e chegar à mesa de trabalho (a mesa só con
 
 ## Próximos passos
 
-1. Missões, diálogos, caixas removíveis e piso molhado
+1. Diálogos, piso molhado e mais missões
 2. Polimento visual (HD, sombras, luz, interface)
-3. IA: dataset auto-rotulado, YOLO treinado no Colab, conversão para TF.js
+3. Treinar o YOLO com o dataset auto-rotulado (Colab) e converter para TF.js
 
 
 ## Modo IA
+
+Teste direto no link online: clique em "Modo IA" e veja o cadeirante completar as missões sozinho.
+
 - Botão "Modo IA" (canto superior direito): o agente planeja com A* e anda sozinho, na ordem café, impressora, mesa. Qualquer seta/toque devolve o controle.
 - Visão: se existir `public/models/mao-na-roda/model.json`, usa o YOLO (TensorFlow.js em Web Worker, como no jogo do pato). Sem modelo, as detecções vêm do estado do jogo no mesmo formato (caixa, classe, confiança). O caminho com modelo ainda não foi testado com um modelo real.
 - Dataset: abra `/?dataset=1`, clique Capturar, depois Baixar ZIP (imagens + rótulos YOLO). Treine com `tools/treino_yolo.ipynb` no Colab.
+
+## Deploy
+
+Publicado na Vercel (preset Vite, `npm run build`, saída em `dist`). Cada push na `main` gera uma nova versão.
