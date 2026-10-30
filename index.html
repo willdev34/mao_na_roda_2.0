@@ -63,6 +63,14 @@
     #modal .emoji { font-size: 54px; }
     #modal h2 { margin: 6px 0 8px; font-size: 22px; color: #1b2430; }
     #modal p { margin: 0 0 16px; color: #3b4658; line-height: 1.45; font-size: 15px; }
+    #modal .extra { display: none; font-size: 14px; background: #f3f6fb; border-radius: 10px; padding: 10px 12px; }
+    #modal.final .extra { display: block; }
+    #modal .big { font-size: 14px; }
+    #modal .row { display: none; gap: 10px; justify-content: center; flex-wrap: wrap; }
+    #modal.final .row { display: flex; }
+    #modal.final #m-ok { display: none; }
+    #modal.final .card { width: min(480px, 90vw); }
+    #modal button.alt { background: #e8eef7; color: #1b2430; }
     #modal button { border: 0; background: #1f7ae0; color: #fff; font-size: 16px; padding: 11px 26px; border-radius: 12px; }
     @keyframes pop { from { transform: scale(.8); opacity: 0; } to { transform: scale(1); opacity: 1; } }
     @media (max-height: 460px) { #pad { transform: scale(.75); transform-origin: left bottom; } }
@@ -94,7 +102,12 @@
       <div class="emoji" id="m-emoji"></div>
       <h2 id="m-title"></h2>
       <p id="m-text"></p>
+      <p id="m-extra" class="extra"></p>
       <button id="m-ok" type="button">Continuar</button>
+      <div id="m-final" class="row">
+        <button id="m-restart" type="button">Reiniciar</button>
+        <button id="m-menu" type="button" class="alt">Voltar ao menu</button>
+      </div>
     </div>
   </div>
   <div id="menu" class="ui">

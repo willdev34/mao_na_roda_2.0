@@ -83,6 +83,8 @@ export class OfficeScene extends Phaser.Scene {
     this.input.keyboard.on('keydown-C', toggle)
     $('mode').addEventListener('click', toggle)
     $('m-ok').addEventListener('click', () => this.closeModal())
+    $('m-restart').addEventListener('click', () => { location.hash = 'jogar'; location.reload() })
+    $('m-menu').addEventListener('click', () => { history.replaceState(null, '', location.pathname + location.search); location.reload() })
     this.updateModeLabel()
     this.setupAI()
     this.setupMenu()
@@ -101,7 +103,9 @@ export class OfficeScene extends Phaser.Scene {
       })
     }
     document.querySelectorAll('#menu .close').forEach((c) => c.addEventListener('click', () => Object.values(panels).forEach((id) => $(id).classList.remove('show'))))
-    $('start').addEventListener('click', () => { $('menu').classList.add('hide'); this.paused = false })
+    const go = () => { $('menu').classList.add('hide'); this.paused = false }
+    $('start').addEventListener('click', go)
+    if (location.hash === '#jogar') go()          // reiniciar: pula o menu
   }
 
   // ---------- Modo IA ----------
@@ -235,7 +239,11 @@ export class OfficeScene extends Phaser.Scene {
     document.querySelectorAll('#pad button.on').forEach((b) => b.classList.remove('on'))
     $('m-emoji').textContent = m.emoji
     $('m-title').textContent = final ? 'Todas as missões concluídas!' : 'Missão concluída!'
-    $('m-text').textContent = m.message
+    $('m-text').textContent = final
+      ? 'Parabéns, você concluiu todas as missões! Pegar o café, buscar a impressão e chegar à mesa parecem tarefas simples, mas dependem de corredores livres, espaço para manobrar e móveis no lugar certo.'
+      : m.message
+    $('m-extra').textContent = 'Acessibilidade no trabalho vai além da rampa na entrada. Um ambiente consciente garante que todas as pessoas circulem, colaborem e façam o seu trabalho com autonomia e dignidade. Isso é boa prática e também direito.'
+    $('modal').classList.toggle('final', !!final)
     $('modal').classList.add('show')
     if (this.agent?.enabled && !final) { clearTimeout(this._aiClose); this._aiClose = setTimeout(() => this.closeModal(), 1600) }
     if (final && this.agent?.enabled) this.toggleAI(false)
